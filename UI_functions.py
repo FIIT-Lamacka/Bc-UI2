@@ -13,7 +13,22 @@ def start5():
         new.create_start_random()
         five_list.append(new)
 
-    for board in five_list:
+    #for board in five_list:
+       # solve(board)
+
+    solve(five_list[0])
+
+
+def solve(board):
+    try:
+        while not board.check_fullness():
+            #board.print_moves()
+            while len(board.unused_moves) == 0:
+                board = board.parent
+            board = board.create_child()
         board.print_board()
-        board.cull_moves()
-        board.print_moves()
+    except AttributeError:
+        print(Back.RED + "NEPODARILO SA NAJSŤ RIEŠENIE" + Style.RESET_ALL)
+
+
+

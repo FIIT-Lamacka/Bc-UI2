@@ -18,6 +18,7 @@ class Move:
 class Board:
     def __init__(self, size):
 
+        self.gen = 1
         self.size = size
         self.board = []
         for i in range(size):
@@ -39,13 +40,6 @@ class Board:
             return True
 
     def print_board(self):
-        """for i in range(len(self.board)):
-            for j in range(len(self.board)):
-                if self.board[i][j] == 0:
-                    print(Back.RED + Fore.BLACK, end="")
-                print(str(self.board[i][j]) + Style.RESET_ALL, end=" ")
-            print("")
-        print("")"""
 
         dummy_board = copy.deepcopy(self.board)
         for i in range(self.size):
@@ -68,6 +62,20 @@ class Board:
         self.board[r_vert][r_hor] = 1
         self.position = [r_vert, r_hor]
 
+    def create_child(self):
+        child = Board(self.size)
+        child.parent = self
+        child.board = copy.deepcopy(self.board)
+        next_move = self.unused_moves.pop()
+
+        child.position = [self.position[0] + next_move.vertical, self.position[1] + next_move.horizontal]
+        child.gen = self.gen + 1
+        child.board[child.position[0]][child.position[1]] = child.gen
+        child.cull_moves()
+        return child
+
+
+
     def cull_moves(self):
         unwanted = []
         for move in self.unused_moves:
@@ -75,9 +83,12 @@ class Board:
             next_horiz = self.position[1] + move.horizontal
             if next_vert >= self.size or next_vert < 0 or next_horiz >= self.size or next_horiz < 0:
                 unwanted.append(move)
+            elif self.board[next_vert][next_horiz] != 0:
+                unwanted.append(move)
 
         for wrong in unwanted:
             self.unused_moves.remove(wrong)
+
 
     def print_moves(self):
         print("Available moves: " + str(len(self.unused_moves)))
@@ -95,17 +106,11 @@ class Board:
             for j in range(new_board.size):
                 if new_board.board[i][j] != 0 and new_board.board[i][j] != "X":
                     new_board.board[i][j] = Fore.GREEN + str(new_board.board[i][j]) + Style.RESET_ALL
+                elif i == self.position[0] and j==self.position[1]:
+                    new_board.board[i][j] = Back.BLUE + Fore.BLACK + str(new_board.board[i][j]) + Style.RESET_ALL
                 elif new_board.board[i][j] == "X":
                     new_board.board[i][j] = Back.YELLOW + Fore.BLACK + "X" + Style.RESET_ALL
                 else:
                     new_board.board[i][j] = Fore.RED + str(new_board.board[i][j]) + Style.RESET_ALL
-
-        '''for i in range(len(self.board)):
-            for j in range(len(self.board)):
-                if new_board.board[i][j] != 0:
-                    print(Back.RED + Fore.BLACK, end="")
-                print(str(new_board.board[i][j]) + Style.RESET_ALL, end=" ")
-            print("")
-        print("")'''
 
         print(tabulate(new_board.board, tablefmt="fancy_grid", stralign="center"))
